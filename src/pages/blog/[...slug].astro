@@ -3,12 +3,9 @@ export const prerender = true;
 
 import BaseLayout from '@layouts/BaseLayout.astro';
 import TagList from '@components/TagList.astro';
-import CommentSection from '@components/CommentSection.astro';
 import { Image } from 'astro:assets';
 import { getCollection, render } from 'astro:content';
 import { ArrowLeft, ArrowRight, Calendar, Clock, Link, Share2, MessageCircle, X as XIcon, Mail, List, Github, Linkedin } from '@lucide/astro';
-
-const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog', ({ data }) => !data.draft);
@@ -275,8 +272,23 @@ const breadcrumbLd = {
         </div>
       </div>
 
-      <!-- Comments -->
-      <CommentSection slug={post.id} turnstileSiteKey={turnstileSiteKey} />
+      <!-- Comments: Commently (comments.aristotle.me). data-page keeps the thread keyed to the post id, not the URL. -->
+      <section class="mt-10 pt-8 border-t border-[var(--color-border-light)] dark:border-[var(--color-border-dark)]" aria-label="Comments">
+        <div id="commently"></div>
+        <script is:inline define:vars={{ commentlyPage: post.id }}>
+          // The site has a manual light/dark toggle (the `dark` class on <html>), so pass the
+          // theme the page is actually showing instead of letting the embed follow the OS.
+          (function () {
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = 'https://comments.aristotle.me/embed.js';
+            s.dataset.site = 'cmt_uljq6ggk4c4xzyvejx4t633h';
+            s.dataset.page = commentlyPage;
+            s.dataset.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+            document.currentScript.insertAdjacentElement('afterend', s);
+          })();
+        </script>
+      </section>
 
       <!-- Prev/Next -->
       <nav aria-label="Previous and next posts" class="mt-10 pt-8 border-t border-[var(--color-border-light)] dark:border-[var(--color-border-dark)] grid sm:grid-cols-2 gap-4">
